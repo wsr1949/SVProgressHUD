@@ -279,6 +279,9 @@ typedef void (^SVProgressHUDDismissCompletion)(void);
 /// @param view The desired view for extensions.
 + (void)setViewForExtension:(nonnull UIView*)view;
 
+/// 🔥设置自定义loading视图，设置nil则恢复默认loading样式
++ (void)setCustomLoadingView:(nullable UIView*)view;
+
 /// Sets the grace time interval for the HUD.
 /// @param interval Desired grace time interval.
 + (void)setGraceTimeInterval:(NSTimeInterval)interval;

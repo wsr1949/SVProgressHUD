@@ -48,6 +48,11 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 @property (nonatomic, strong) SVProgressAnimatedView *ringView;
 @property (nonatomic, strong) SVProgressAnimatedView *backgroundRingView;
 
+/// 🔥自定义loading视图
+@property (nonatomic, strong) UIView *customLoadingView;
+/// 🔥记录最后一个自定义loading视图
+@property (nonatomic, strong) UIView *lastCustomLoadingView;
+
 @property (nonatomic, readwrite) CGFloat progress;
 @property (nonatomic, readwrite) NSUInteger activityCount;
 
@@ -207,6 +212,11 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 
 + (void)setViewForExtension:(UIView*)view {
     [self sharedView].viewForExtension = view;
+}
+
+/// 🔥设置自定义loading视图，设置nil则恢复默认loading样式
++ (void)setCustomLoadingView:(UIView *)view {
+    [self sharedView].customLoadingView = view;
 }
 
 + (void)setGraceTimeInterval:(NSTimeInterval)interval {
@@ -466,6 +476,10 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
         centerY = CGRectGetMidY(self.hudView.bounds);
     }
     self.indefiniteAnimatedView.center = CGPointMake(CGRectGetMidX(self.hudView.bounds), centerY);
+    // 🔥设置自定义loading视图的frame
+    if (self.customLoadingView) {
+        self.customLoadingView.frame = self.indefiniteAnimatedView.bounds;
+    }
     if(self.progress != SVProgressHUDUndefinedProgress) {
         self.backgroundRingView.center = self.ringView.center = CGPointMake(CGRectGetMidX(self.hudView.bounds), centerY);
     }
@@ -771,6 +785,16 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
                 
                 // Add indefiniteAnimatedView to HUD
                 [strongSelf.hudView.contentView addSubview:strongSelf.indefiniteAnimatedView];
+                
+                if (strongSelf.lastCustomLoadingView) {
+                    [strongSelf.lastCustomLoadingView removeFromSuperview];
+                }
+                strongSelf.lastCustomLoadingView = strongSelf.customLoadingView;
+                // 🔥添加自定义loading视图
+                if (strongSelf.customLoadingView) {
+                    [strongSelf.indefiniteAnimatedView addSubview:strongSelf.customLoadingView];
+                }
+                
                 if([strongSelf.indefiniteAnimatedView respondsToSelector:@selector(startAnimating)]) {
                     [(id)strongSelf.indefiniteAnimatedView startAnimating];
                 }
@@ -1122,6 +1146,11 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     // Stop animation
     if([self.indefiniteAnimatedView respondsToSelector:@selector(stopAnimating)]) {
         [(id)self.indefiniteAnimatedView stopAnimating];
+    }
+    // 🔥移除自定义loading视图
+    if (self.customLoadingView) {
+        [self.customLoadingView removeFromSuperview];
+        _customLoadingView = nil;
     }
     // Remove from view
     [self.indefiniteAnimatedView removeFromSuperview];
